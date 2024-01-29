@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-weight: bold;
+        }
+        header{ 
+            margin-top: 10px;
+        }
+        #calendar {
+           display: grid;
+           grid-template-columns: repeat(7,1fr);
+           grid-template-rows: 30px,repeat(5,1fr);
+           grid-gap: 2px;
+           margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <label for="Year">Year? </label>
+        <input type="number" id="Year" value="2024" autocomplete="off">
+        <label for="month">Month? </label>
+        <input type="month" id="month" oninput=month_output()>
+    </header>
+    
+    <main>
+        <div id="Month" style="display: none;">
+            <span style="font-size: 30px;"></span>
+            <span style="vertical-align: bottom; font-size: 15px; padding-left: 5px;"></span>
+        </div>
+        <div id="calendar" style="display: none;"></div>
+    </main>
+    <script>
+        let months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        let Weekdays = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+
+        for(let ii=1; ii<=6; ii++) {
+            for(let jj=1; jj<=7; jj++) {
+                const temp = document.createElement('div');
+
+                if(ii == 1) {
+                    temp.innerHTML = Weekdays[jj-1];
+                    let style = `grid-area: ${ii}/${jj}/${ii+1}/${jj+1}; width: 150px; height: 30px; background-Color: #eee; border: solid 2px black; text-align: center; line-height:30px; `
+                    temp.style = style;
+                    if(jj == 1) temp.style.color = 'red';
+                    
+                    
+                } else {
+                    //temp.innerHTML = (ii-2)*7+jj;
+                    temp.setAttribute('id',`n${(ii-2)*7+(jj-1)}`);
+                    let style = `grid-area: ${ii}/${jj}/${ii+1}/${jj+1}; width: 140px; height: 100px; background-Color: #eee; border: solid 2px black; padding-top: 10px; padding-left: 10px;`
+                    temp.style = style;
+                    if(jj == 1) temp.style.color = 'red';
+                }
+                
+                document.getElementById('calendar').appendChild(temp);
+            }
+        }
+
+        function month_day(a,b) {
+            if(a==1 || a==3 || a==5 || a==7 || a==8 || a==10 || a==12) return 31;
+            else if(a==4 || a==6 || a==9 || a==11) return 30;
+            else {
+                if((b%4==0 && b%100!=0) || b%400==0) return 29;
+                else  return 28; 
+            }
+        }
+        
+        function month_output() {
+            month_value = document.getElementById('month').value;
+            year_value = parseInt(document.getElementById('Year').value)
+            let check = 0, sum = 0, first, max, num=0;
+
+            if(month_value.length == 1 && (49 <= month_value.charCodeAt(0)&&month_value.charCodeAt(0) <= 57))
+                check = 1;
+            if(month_value.length == 2 && (49 <= month_value.charCodeAt(0)&&month_value.charCodeAt(0) <= 57) && (48 <= month_value.charCodeAt(1)&&month_value.charCodeAt(1) <= 50))
+                check = 1;
+
+            if(check == 1) {
+                check = 0;
+                document.getElementById('calendar').style.display = 'grid'
+                document.getElementById('Month').style = 'display: flex; justify-content: center; align-items: center; margin: 20px 0px 20px 0px;';
+                document.querySelector('#Month > span:nth-child(1)').innerHTML = month_value;
+                document.querySelector('#Month > span:nth-child(2)').innerHTML = months[parseInt(month_value)-1];
+
+                for(let ii=0; ii<=4; ii++) {
+                    for(let jj=0; jj<=6; jj++) {
+                        document.getElementById(`n${7*ii+jj}`).innerHTML = ''
+                    }
+                }
+                
+                
+                for(let ii=1583; ii<year_value; ii++) {
+                    ((ii%4==0 && ii%100!=0) || ii%400==0) ? sum+=2 : sum+=1
+                }
+
+                first = (sum+6)%7;
+                max = month_day(month_value, year_value);
+
+                for(let ii=1; ii<parseInt(month_value); ii++) {
+                    first += month_day(ii, year_value) % 7
+                }
+
+                first=first%7
+                console.log(`first: ${first%7}, max: ${max}`)
+
+                for(let ii=0; ii<=4; ii++) {
+                    for(let jj=0; jj<=6; jj++) {
+                        if(ii==0) {
+                            if(jj >= first)
+                                document.getElementById(`n${jj}`).innerHTML = jj+1 - first, num++
+                        } else {
+                            num++
+                            document.getElementById(`n${7*ii+jj}`).innerHTML = parseInt(document.getElementById(`n${7*ii-1}`).innerHTML)+1+jj
+
+                            if(num == max) break
+                            
+                        }
+                    }
+                }
+
+            } else {
+                document.getElementById('Month').style.display = 'none';
+                document.getElementById('calendar').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
